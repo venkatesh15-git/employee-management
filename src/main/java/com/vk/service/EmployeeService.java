@@ -1,6 +1,7 @@
 package com.vk.service;
 
 import com.vk.entity.Employee;
+import com.vk.exception.EmployeeNotFoundException;
 import com.vk.repo.EmployeeRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,27 +30,41 @@ public class EmployeeService {
         return empRepo.findAll();
     }
 
-    public Employee getEmpById(Integer id){
+    public Employee getEmpById(Integer id) {
 
-        return empRepo.findById(id).orElse(null);
+        return empRepo.findById(id)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Employee not found with id: " + id
+                        )
+                );
     }
 
-    public Employee updateEmpById(Integer id, Employee emp){
-       Employee existEmp = empRepo.findById(id).orElse(null);
-       if (existEmp == null) {
-           return null;
-       }
+    public Employee updateEmpById(Integer id, Employee emp) {
 
-       existEmp.setName(emp.getName());
-       existEmp.setSalary(emp.getSalary());
-       existEmp.setDepartment(emp.getDepartment());
-       return empRepo.save(existEmp);
+        Employee existEmp = empRepo.findById(id)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Cannot update. Employee not found with id: " + id
+                        )
+                );
+
+        existEmp.setName(emp.getName());
+        existEmp.setSalary(emp.getSalary());
+        existEmp.setDepartment(emp.getDepartment());
+
+        return empRepo.save(existEmp);
     }
 
-    public void deleteEmp(Integer id){
-        if (empRepo.existsById(id)) {
-            empRepo.deleteById(id);
+    public void deleteEmp(Integer id) {
+
+        if (!empRepo.existsById(id)) {
+            throw new EmployeeNotFoundException(
+                    "Cannot delete. Employee not found with id: " + id
+            );
         }
+
+        empRepo.deleteById(id);
     }
 
 }
