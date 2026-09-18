@@ -55,7 +55,6 @@ public class EployeeController {
         if (empService.getEmpById(id) == null) {
             return ResponseEntity.notFound().build();
         }
-
         empService.deleteEmp(id);
         return ResponseEntity.noContent().build();
     }
